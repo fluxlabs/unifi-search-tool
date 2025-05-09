@@ -1,46 +1,44 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // hide console window on Windows in release
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")] // Hide console window on Windows in release
 
 mod gui;
 mod mac_address;
 mod unifi;
 
 use gui::app::GuiApp;
+use eframe::egui;
+use eframe::NativeOptions;
 
 fn main() {
-    const IMAGE: &[u8] = include_bytes!("unifi-search.ico");
-    let icon = load_icon(IMAGE);
+    let icon = load_embedded_icon(include_bytes!("unifi-search.ico"));
 
-    let native_options = eframe::NativeOptions {
+    let native_options = NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([800., 280.])
-            .with_min_inner_size([500., 170.])
+            .with_inner_size([800.0, 280.0])
+            .with_min_inner_size([500.0, 170.0])
             .with_icon(icon),
         ..Default::default()
     };
-    let error = eframe::run_native(
+
+    if let Err(e) = eframe::run_native(
         "Unifi Search Tool",
         native_options,
         Box::new(|cc| Ok(Box::new(GuiApp::new(cc)))),
-    );
-    if error.is_err() {
-        eprintln!("{}", error.unwrap_err());
+    ) {
+        eprintln!("Failed to launch application: {e}");
     }
 }
 
-fn load_icon(image_const: &[u8]) -> egui::viewport::IconData {
-    let (icon_rgba, icon_width, icon_height) = {
-        //let image = image::open(path)
-        let image = image::load_from_memory(image_const)
-            .expect("Failed to load icon from binary")
-            .into_rgba8();
-        let (width, height) = image.dimensions();
-        let rgba = image.into_raw();
-        (rgba, width, height)
-    };
+fn load_embedded_icon(bytes: &[u8]) -> egui::viewport::IconData {
+    let image = image::load_from_memory(bytes)
+        .expect("Failed to load icon from binary")
+        .into_rgba8();
+
+    let (width, height) = image.dimensions();
+    let rgba = image.into_raw();
 
     egui::viewport::IconData {
-        rgba: icon_rgba,
-        width: icon_width,
-        height: icon_height,
+        rgba,
+        width,
+        height,
     }
 }

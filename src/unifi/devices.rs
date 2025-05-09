@@ -4,17 +4,19 @@ use serde::Deserialize;
 use serde_repr::Deserialize_repr;
 use crate::mac_address::MacAddress;
 
+/// Represents a UniFi site with a code and description.
 #[derive(Default, Debug, Clone, Deserialize)]
-pub(crate) struct UnifiSite {
+pub struct UnifiSite {
     #[serde(rename(deserialize = "name"))]
-    pub(crate) code: Box<str>,
-    pub(crate) desc: Box<str>,
+    pub code: Box<str>,
+    pub desc: Box<str>,
 }
 
 // from https://github.com/Art-of-WiFi/UniFi-API-client/blob/d36a088101e3422e98be1c042afdebaf5f190e8b/src/Client.php#L3379
+/// Enumerates possible UniFi device states.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize_repr)]
 #[repr(u8)]
-pub(crate) enum DeviceState {
+pub enum DeviceState {
     Offline         = 0,
     Connected       = 1,
     PendingAdoption = 2,
@@ -29,7 +31,7 @@ pub(crate) enum DeviceState {
 
 impl DeviceState {
     #[inline]
-    pub(crate) fn as_str(&self) -> &'static str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             DeviceState::Offline         => "Offline",
             DeviceState::Connected       => "Connected",
@@ -45,41 +47,43 @@ impl DeviceState {
     }
 }
 
+/// Basic representation of a UniFi device.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-pub(crate) struct UnifiDeviceBasic {
-    pub(crate) mac: MacAddress,
-    pub(crate) state: DeviceState,
-    pub(crate) adopted: bool,
+pub struct UnifiDeviceBasic {
+    pub mac: MacAddress,
+    pub state: DeviceState,
+    pub adopted: bool,
     #[serde(rename(deserialize = "type"))]
-    pub(crate) device_type: Box<str>,
+    pub device_type: Box<str>,
     #[serde(rename(deserialize = "model"))]
-    pub(crate) device_model: Box<str>,
+    pub device_model: Box<str>,
     #[serde(rename(deserialize = "in_gateway_mode"))]
-    pub(crate) gateway_mode: Option<bool>,
+    pub gateway_mode: Option<bool>,
     #[serde(rename(deserialize = "name"))]
-    pub(crate) name_option: Option<Box<str>>,
+    pub name_option: Option<Box<str>>,
     #[serde(skip_deserializing)]
-    pub(crate) device_label_option: Option<&'static str>,
+    pub device_label_option: Option<&'static str>,
     #[serde(skip_deserializing)]
-    pub(crate) site: Box<str>,
+    pub site: Box<str>,
 }
 
 // #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
-// pub(crate) struct UnifiDeviceFull {
+// pub struct UnifiDeviceFull {
 //     #[serde(flatten)]
 //     device: UnifiDeviceBasic,
 //     port_table: Option<Vec<Port>>,
 // }
 
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
-pub(crate) struct Port {
+pub struct Port {
     name: Box<str>,
     ifname: Box<str>,
     mac: Box<str>,
 }
 
+/// Historical record of a client device that was connected.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
-pub(crate) struct ClientDevice {
+pub struct ClientDevice {
     last_ip: Box<str>,
     oui: Box<str>,
     #[serde(with = "ts_seconds")]
@@ -93,8 +97,9 @@ pub(crate) struct ClientDevice {
     hostname: Box<str>,
 }
 
+/// Active client device currently connected.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize)]
-pub(crate) struct ClientDeviceActive {
+pub struct ClientDeviceActive {
     #[serde(rename(deserialize = "assoc_time"), with = "ts_seconds")]
     session_start: DateTime<Utc>,
     #[serde(rename(deserialize = "latest_assoc_time"), with = "ts_seconds")]
@@ -117,7 +122,7 @@ pub(crate) struct ClientDeviceActive {
 impl UnifiDeviceBasic {
 
     #[inline]
-    pub(crate) fn create_device_label(&mut self) {
+    pub fn create_device_label(&mut self) {
         self.device_label_option = match &*self.device_type {
             "uap" => {
                 match self.device_model.as_ref() {

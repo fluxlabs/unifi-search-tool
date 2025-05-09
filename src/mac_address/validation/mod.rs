@@ -7,7 +7,8 @@ use regex_automata::{
 	Anchored, Input,
 };
 
-pub(crate) const MAC_ADDR_REGEX_STR: &str = "^(?:(?:[0-9A-Fa-f]{2}:){5}|(?:[0-9A-Fa-f]{2}-){5})[0-9A-Fa-f]{2}$";
+/// Regex pattern used to match valid MAC addresses (colon or dash delimited).
+pub const MAC_ADDR_REGEX_STR: &str = "^(?:(?:[0-9A-Fa-f]{2}:){5}|(?:[0-9A-Fa-f]{2}-){5})[0-9A-Fa-f]{2}$";
 
 pub static MAC_ADDR_REGEX: Lazy<dense::DFA<&'static [u32]>> = Lazy::new(|| {
 	static ALIGNED: &AlignAs<[u8], u32> = &AlignAs {
@@ -21,7 +22,8 @@ pub static MAC_ADDR_REGEX: Lazy<dense::DFA<&'static [u32]>> = Lazy::new(|| {
 	dense_dfa
 });
 
-pub(crate) fn text_is_valid_mac<S: AsRef<[u8]>>(bytes: S) -> bool {
+/// Validates whether the input byte slice matches a standard MAC address format.
+pub fn text_is_valid_mac<S: AsRef<[u8]>>(bytes: S) -> bool {
 	MAC_ADDR_REGEX
 		.try_search_fwd(&Input::new(&bytes).anchored(Anchored::Yes).earliest(true))
 		.is_ok_and(|x| x.is_some())
